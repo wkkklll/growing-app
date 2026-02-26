@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Weekly review not found" }, { status: 404 })
       }
 
-      const reviewDate = new Date(weeklyReview.startDate).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })
+      const reviewDate = new Date(weeklyReview.reviewDate).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })
       filename = `每周复盘-${reviewDate}.md`
 
       let actionableGuidanceList: string[] = []
@@ -37,8 +37,7 @@ export async function GET(req: NextRequest) {
 
       markdownContent = `# 每周复盘 - ${reviewDate}\n\n`
       markdownContent += `## 本周概览\n\n`
-      markdownContent += `- 开始日期: ${new Date(weeklyReview.startDate).toLocaleDateString("zh-CN")}\n`
-      markdownContent += `- 结束日期: ${new Date(weeklyReview.endDate).toLocaleDateString("zh-CN")}\n\n`
+      markdownContent += `- 复盘日期: ${new Date(weeklyReview.reviewDate).toLocaleDateString("zh-CN")}\n\n`
 
       markdownContent += `## AI 积极反馈\n\n${weeklyReview.positiveFeedback || "暂无"}\n\n`
       markdownContent += `## AI 改进领域\n\n${weeklyReview.areasForImprovement || "暂无"}\n\n`
@@ -65,7 +64,7 @@ export async function GET(req: NextRequest) {
       filename = `每日复盘-${logDate}.md`
 
       markdownContent = `# 每日复盘 - ${logDate}\n\n`
-      markdownContent += `## 心情指数\n\n${dailyLog.mood || "N/A"}/10\n\n`
+      markdownContent += `## 心情指数\n\n${dailyLog.moodIndex || "N/A"}/10\n\n`
       markdownContent += `## 日志内容\n\n${dailyLog.content || "暂无"}\n\n`
 
       if (dailyLog.milestones.length > 0) {

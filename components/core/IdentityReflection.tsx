@@ -16,12 +16,17 @@ export function IdentityReflection() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    fetch("/api/identity")
+    fetch("/api/settings/identity")
       .then((res) => res.json())
       .then((data) => {
-        if (data && data.identityText) {
-          setIdentity(data)
-          setEditText(data.identityText)
+        if (data && data.identityDescription) {
+          setIdentity({
+            id: "setting",
+            identityText: data.identityDescription,
+            createdAt: "",
+            updatedAt: ""
+          })
+          setEditText(data.identityDescription)
         }
       })
   }, [])
@@ -35,31 +40,37 @@ export function IdentityReflection() {
   const handleSave = async () => {
     if (editText.trim() === "") return
 
-    const method = identity ? "PATCH" : "POST"
-    const url = identity ? `/api/identity/${identity.id}` : "/api/identity"
-
-    const res = await fetch(url, {
-      method,
+    const res = await fetch("/api/settings/identity", {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ identityText: editText.trim() }),
+      body: JSON.stringify({ identityDescription: editText.trim() }),
     })
 
     if (res.ok) {
-      const updatedIdentity = await res.json()
-      setIdentity(updatedIdentity)
+      const data = await res.json()
+      setIdentity({
+        id: "setting",
+        identityText: data.identityDescription,
+        createdAt: "",
+        updatedAt: ""
+      })
       setIsEditing(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!identity) return
-
     const confirmed = window.confirm("确定删除你的身份认同吗？这将清空当前内容。")
     if (!confirmed) return
 
-    const res = await fetch(`/api/identity/${identity.id}`, { method: "DELETE" })
+    const res = await fetch("/api/settings/identity", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ identityDescription: " " }), // Use a space to clear
+    })
 
     if (res.ok) {
       setIdentity(null)

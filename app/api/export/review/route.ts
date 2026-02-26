@@ -53,7 +53,6 @@ export async function GET(req: NextRequest) {
     } else if (reviewType === "daily") {
       const dailyLog = await prisma.dailyLog.findUnique({
         where: { id: reviewId },
-        include: { milestones: true, standaloneTasks: true, behaviorLogs: true, dailyMetrics: true },
       })
 
       if (!dailyLog) {
@@ -67,33 +66,41 @@ export async function GET(req: NextRequest) {
       markdownContent += `## 心情指数\n\n${dailyLog.moodIndex || "N/A"}/10\n\n`
       markdownContent += `## 日志内容\n\n${dailyLog.content || "暂无"}\n\n`
 
-      if (dailyLog.milestones.length > 0) {
+      // Fetch related data separately since relations are not defined in schema
+      const [milestones, standaloneTasks, behaviorLogs, dailyMetrics] = await Promise.all([
+        prisma.milestone.findMany({ where: { completedAt: { not: null }, project: { dailyTodos: { some: { logDate: dailyLog.logDate } } } } }), // This is a heuristic
+        prisma.standaloneTask.findMany({ where: { planDate: dailyLog.logDate, completed: true } }),
+        prisma.behaviorLog.findMany({ where: { createdAt: { gte: dailyLog.logDate, lt: new Date(dailyLog.logDate.getTime() + 24 * 60 * 60 * 1000) } } }),
+        prisma.dailyMetric.findMany({ where: { logDate: dailyLog.logDate } })
+      ])
+
+      if (milestones.length > 0) {
         markdownContent += `## 完成里程碑\n\n`
-        dailyLog.milestones.forEach((m) => {
-          markdownContent += `- [${m.isCompleted ? "x" : " "}] ${m.title}\n`
+        milestones.forEach((m) => {
+          markdownContent += `- [x] ${m.title}\n`
         })
         markdownContent += `\n`
       }
 
-      if (dailyLog.standaloneTasks.length > 0) {
+      if (standaloneTasks.length > 0) {
         markdownContent += `## 完成独立任务\n\n`
-        dailyLog.standaloneTasks.forEach((t) => {
-          markdownContent += `- [${t.isCompleted ? "x" : " "}] ${t.title}\n`
+        standaloneTasks.forEach((t) => {
+          markdownContent += `- [x] ${t.title}\n`
         })
         markdownContent += `\n`
       }
 
-      if (dailyLog.behaviorLogs.length > 0) {
+      if (behaviorLogs.length > 0) {
         markdownContent += `## 行为记录\n\n`
-        dailyLog.behaviorLogs.forEach((b) => {
+        behaviorLogs.forEach((b) => {
           markdownContent += `- ${b.behaviorType}: ${b.points} 积分 (${new Date(b.createdAt).toLocaleTimeString("zh-CN")})\n`
         })
         markdownContent += `\n`
       }
 
-      if (dailyLog.dailyMetrics.length > 0) {
+      if (dailyMetrics.length > 0) {
         markdownContent += `## 每日指标\n\n`
-        dailyLog.dailyMetrics.forEach((m) => {
+        dailyMetrics.forEach((m) => {
           markdownContent += `- ${m.metricType}: ${m.value}\n`
         })
         markdownContent += `\n`

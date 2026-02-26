@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
     const log = await prisma.dailyLog.findUnique({
       where: { logDate: date },
-      select: { taskCompletions: true, moodIndex: true, logDate: true, content: true, aiReview: true },
+      select: { id: true, taskCompletions: true, moodIndex: true, logDate: true, content: true, aiReview: true },
     })
 
     const taskCompletions = log?.taskCompletions

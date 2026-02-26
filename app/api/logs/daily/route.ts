@@ -28,10 +28,27 @@ export async function GET(req: NextRequest) {
       ? (JSON.parse(log.taskCompletions) as Record<string, string>)
       : {}
     
-    // ... rest of the code ...
+    // Fetch log entries (milestones) for this date
+    const entries = await prisma.milestone.findMany({
+      where: {
+        id: { in: Object.keys(taskCompletions) }
+      },
+      include: {
+        project: {
+          select: { title: true }
+        }
+      }
+    }).then(ms => ms.map(m => ({
+      milestoneId: m.id,
+      projectId: m.projectId,
+      projectTitle: m.project.title,
+      title: m.title,
+      status: taskCompletions[m.id]
+    })))
 
     return NextResponse.json({
       date: dateStr,
+      logId: log?.id ?? null,
       moodIndex: log?.moodIndex ?? 5,
       content: log?.content ?? "",
       aiReview: log?.aiReview ?? "",

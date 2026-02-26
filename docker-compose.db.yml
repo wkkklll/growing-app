@@ -1,0 +1,21 @@
+# 仅启动 PostgreSQL，适合本地开发（在宿主机运行 npm run dev）
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: phoenix-growth-db
+    environment:
+      POSTGRES_USER: phoenix
+      POSTGRES_PASSWORD: phoenix_dev
+      POSTGRES_DB: phoenix_growth
+    ports:
+      - "5432:5432"
+    volumes:
+      - phoenix_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phoenix"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  phoenix_db_data:

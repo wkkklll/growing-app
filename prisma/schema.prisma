@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id               String    @id @default(uuid())
+  title            String
+  progressPercent  Int       @default(0)
+  status           String    @default("active") // active | completed | paused
+  wbsTree          String?   // WBS 任务树 JSON 字符串
+  dailyMinutes     Int?      // 每日建议投入时间（分钟）
+  endDate          DateTime? // 目标截止时间
+  targetDescription String?   // 终局描述（可验证、可量化部分）
+  behaviorMetrics  String?   // 行为指标 JSON 字符串
+  resultMetrics    String?   // 结果指标 JSON 字符串
+  capabilityMetrics String?   // 能力指标 JSON 字符串
+  stagnationDays   Int       @default(0) // 连续停滞天数
+  lastActivityDate DateTime  @default(now()) // 上次活跃日期
+  createdAt        DateTime  @default(now())
+
+  milestones Milestone[]
+  dailyTodos DailyTodo[]
+}
+
+model Milestone {
+  id               String   @id @default(uuid())
+  projectId        String
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title            String
+  orderIndex       Int      @default(0)
+  completed        Boolean  @default(false)
+  completedAt      DateTime? // 完成时间
+  isManual         Boolean  @default(false) // 区分是否为手动添加
+  estimatedMinutes Int?     // 预估完成时间（分钟），用于合理分配每日任务
+  twoMinuteVersion String?  // 2 分钟启动版本描述
+  antiProcrastinationScript String? // 动摇脚本/反情绪文案
+
+  @@index([projectId])
+}
+
+model DailyLog {
+  id               String   @id @default(uuid())
+  logDate          DateTime
+  moodIndex        Int      @default(5) // 1-10
+  content          String?   // 用户填写的复盘文本内容
+  taskCompletions  String?   // JSON: { milestoneId: "completed"|"partial"|"pending" }
+  aiReview         String?
+  createdAt        DateTime @default(now())
+
+  @@unique([logDate])
+  @@index([logDate])
+}
+
+model Inspiration {
+  id        String   @id @default(uuid())
+  content   String   // 灵感内容
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StandaloneTask {
+  id          String   @id @default(uuid())
+  title       String
+  completed   Boolean  @default(false)
+  planDate    DateTime @default(now()) // 计划日期
+  twoMinuteVersion String?  // 2 分钟启动版本描述
+  antiProcrastinationScript String? // 动摇脚本/反情绪文案
+  createdAt   DateTime @default(now())
+
+  @@index([planDate])
+}
+
+model DailyTodo {
+  id        String   @id @default(uuid())
+  title     String
+  logDate   DateTime
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([logDate])
+  @@index([projectId])
+}
+
+model BehaviorLog {
+  id               String   @id @default(uuid())
+  milestoneId      String?  // 关联里程碑
+  standaloneTaskId String?  // 关联独立任务
+  rewardId         String?  // 关联奖励
+  behaviorType     String   // 'writing', 'learning', 'review', 'reward_spent' etc.
+  points           Int      // 获得的积分
+  createdAt        DateTime @default(now())
+
+  @@index([milestoneId])
+  @@index([standaloneTaskId])
+  @@index([rewardId])
+  @@index([createdAt])
+}
+
+model Reward {
+  id        String   @id @default(uuid())
+  title     String
+  costPoints Int
+  claimedAt DateTime?
+  status    String   @default("pending") // pending | claimed
+  rewardType String  @default("general") // general | short_term_wish
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Setting {
+  id          String @id @default(uuid())
+  key         String @unique
+  value       String
+  yearlyWishes String?
+  motivationPhrases String?
+  dailyMetricTypes String? // Added for daily metrics configuration
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WeeklyReview {
+  id                 String    @id @default(uuid())
+  projectId          String?  // 关联项目（可选，如果复盘是针对某个项目）
+  reviewDate         DateTime  @default(now()) // 周复盘日期
+  positiveFeedback   String?
+  areasForImprovement String?
+  actionableGuidance String? // JSON 字符串数组
+  aiRawOutput        String? // AI 的原始输出，用于调试
+  createdAt          DateTime  @default(now())
+
+  @@index([projectId])
+  @@index([reviewDate])
+}
+
+model DailyMetric {
+  id        String   @id @default(uuid())
+  logDate   DateTime
+  metricType String
+  value     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([logDate, metricType])
+  @@index([logDate])
+}
+
+model ScheduledTask {
+  id               String   @id @default(uuid())
+  planDate         DateTime
+  taskId           String   // Either Milestone ID or StandaloneTask ID
+  taskType         String   // 'milestone' or 'standalone'
+  taskTitle        String
+  startTime        DateTime // Scheduled start time
+  endTime          DateTime // Scheduled end time
+  originalEstimatedMinutes Int? // Original estimated minutes from Milestone/StandaloneTask
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([planDate])
+  @@index([taskId])
+}
+
+model EmotionThread {
+  id        String    @id @default(uuid())
+  userId    String?   // For future multi-user support
+  logDate   DateTime? // Optional: Link to a specific daily log date
+  title     String    // AI generated or user input topic of the thread
+  status    String    @default("open") // open | resolved | archived
+  summary   String?   // AI summarized core of the problem, for memory
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  logs      EmotionLog[]
+
+  @@index([logDate])
+  @@index([userId])
+}
+
+model EmotionLog {
+  id        String   @id @default(uuid())
+  threadId  String
+  thread    EmotionThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role      String   // 'user' or 'ai'
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([threadId])
+}

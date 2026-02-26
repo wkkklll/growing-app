@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { getProjectColor } from "@/lib/project-color"
@@ -420,7 +420,7 @@ export default function ProjectDetailPage() {
       <section className="mb-8">
         <h2 className="mb-4 text-lg font-semibold text-slate-800">任务拆解</h2>
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          {isEditingWbs && project.wbsTree ? (
+          {isEditingWbs && project.wbsTree && projectId ? (
             <WbsEditor
               projectId={projectId}
               initialWbsTree={mapWbsTreeWithMilestoneIds(project.wbsTree, project.milestones)}

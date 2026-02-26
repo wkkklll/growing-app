@@ -181,15 +181,13 @@ export function DailyTimeline({
           <div className="relative" style={{ height: `${18 * HOUR_HEIGHT}px` }}>
             {hours.map((hour) => {
               const timeSlotId = `time-slot-${String(hour).padStart(2, "0")}:00`
-              const { setNodeRef, isOver } = useDroppable({ id: timeSlotId })
 
               return (
                 <TimeSlot
                   key={hour}
                   hour={hour}
                   hourHeight={HOUR_HEIGHT}
-                  isOver={isOver}
-                  setNodeRef={setNodeRef}
+                  timeSlotId={timeSlotId}
                 />
               )
             })}

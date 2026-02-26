@@ -5,11 +5,11 @@ import { useDroppable } from "@dnd-kit/core"
 interface TimeSlotProps {
   hour: number
   hourHeight: number
-  isOver: boolean
-  setNodeRef: (element: HTMLElement | null) => void
+  timeSlotId: string
 }
 
-export function TimeSlot({ hour, hourHeight, isOver, setNodeRef }: TimeSlotProps) {
+export function TimeSlot({ hour, hourHeight, timeSlotId }: TimeSlotProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: timeSlotId })
   return (
     <div
       ref={setNodeRef}

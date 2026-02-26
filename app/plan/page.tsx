@@ -47,7 +47,6 @@ export interface ScheduledTask {
 
 const dropAnimation: DropAnimation = {
   ...defaultDropAnimation,
-  dragSourceOpacity: 0.5,
 }
 
 export default function PlanPage() {

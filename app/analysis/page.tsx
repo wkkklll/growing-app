@@ -15,31 +15,17 @@ interface ProjectOption {
 
 export default function AnalysisPage() {
   const searchParams = useSearchParams()
-  const projectIdFromUrl = searchParams.get("projectId")
   const [prompt, setPrompt] = useState("")
   const [analysis, setAnalysis] = useState("")
   const [loading, setLoading] = useState(false)
   const [recentLogs, setRecentLogs] = useState<AnalysisItem[]>([])
   const [projects, setProjects] = useState<ProjectOption[]>([])
-  const [projectId, setProjectId] = useState<string | null>(projectIdFromUrl)
+  const [projectId, setProjectId] = useState<string | null>(null)
 
   useEffect(() => {
+    const projectIdFromUrl = searchParams.get("projectId")
     setProjectId(projectIdFromUrl)
-  }, [projectIdFromUrl])
-
-  useEffect(() => {
-    fetch("/api/analysis/recent")
-      .then((r) => r.json())
-      .then((d) => setRecentLogs(d.logs ?? []))
-      .catch(() => setRecentLogs([]))
-  }, [])
-
-  useEffect(() => {
-    fetch("/api/projects")
-      .then((r) => r.json())
-      .then((d) => setProjects(d.projects ?? []))
-      .catch(() => setProjects([]))
-  }, [])
+  }, [searchParams])
 
   const requestAnalysis = async () => {
     if (!prompt.trim()) return

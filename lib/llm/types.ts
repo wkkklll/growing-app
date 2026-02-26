@@ -1,7 +1,7 @@
 export type LLMProviderName = "openai" | "claude" | "deepseek" | "aliyun"
 
 export interface Message {
-  role: "system" | "user" | "assistant"
+  role: "system" | "user" | "assistant" | "ai"
   content: string
 }
 

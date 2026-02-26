@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import "./globals.css"
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: "Phoenix Growth OS",
@@ -38,7 +39,11 @@ export default function RootLayout({
             </nav>
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+        <main className="mx-auto max-w-6xl px-4 py-8">
+          <Suspense fallback={<div>加载中...</div>}>
+            {children}
+          </Suspense>
+        </main>
       </body>
     </html>
   )

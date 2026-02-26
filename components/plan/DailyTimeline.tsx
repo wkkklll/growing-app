@@ -46,7 +46,14 @@ function ScheduledDraggableItem({ task, style, onRemove, onResizeStart }: {
       ref={setNodeRef}
       id={`task-${task.id}`}
       className="absolute left-2 right-4 rounded-lg p-2 text-white shadow-md flex flex-col justify-between pointer-events-auto transition-all bg-sky-600 border-l-4 border-sky-800 touch-none"
-      style={combinedStyle}
+      style={{
+        ...combinedStyle,
+        marginTop: '4px',
+        marginBottom: '4px',
+        height: typeof combinedStyle.height === 'string' 
+          ? `calc(${combinedStyle.height} - 8px)` 
+          : (combinedStyle.height - 8) + 'px'
+      }}
       {...listeners}
       {...attributes}
     >
@@ -174,13 +181,13 @@ export function DailyTimeline({
 
   return (
     <div className="flex flex-col h-full">
-      <h2 className="mb-4 text-lg font-semibold text-slate-800">今日时间表</h2>
       
-      <div className="relative rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden flex-grow">
-        <div ref={timelineRef} className="h-full overflow-y-auto relative scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent" style={{ maxHeight: `${18 * HOUR_HEIGHT}px` }}>
-          <div className="relative" style={{ height: `${18 * HOUR_HEIGHT}px` }}>
-            {hours.map((hour) => {
+      <div className="relative overflow-hidden flex-grow bg-white">
+        <div ref={timelineRef} className="h-full overflow-y-auto relative scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent" style={{ maxHeight: `${18 * HOUR_HEIGHT + 60}px` }}>
+          <div className="relative" style={{ height: `${18 * HOUR_HEIGHT + 60}px` }}>
+            {hours.map((hour, index) => {
               const timeSlotId = `time-slot-${String(hour).padStart(2, "0")}:00`
+              const isLast = index === hours.length - 1
 
               return (
                 <TimeSlot
@@ -188,6 +195,7 @@ export function DailyTimeline({
                   hour={hour}
                   hourHeight={HOUR_HEIGHT}
                   timeSlotId={timeSlotId}
+                  isLast={isLast}
                 />
               )
             })}

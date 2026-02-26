@@ -380,31 +380,35 @@ export default function PlanPage() {
 
           {/* Right Column: Timeline (7 columns) */}
           <div className="lg:col-span-7 flex flex-col h-full">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex-grow h-[800px] flex flex-col">
-              <div className="flex items-center justify-between mb-6">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex-grow h-[800px] flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between mb-6 shrink-0">
                 <h2 className="text-xl font-bold text-slate-800">时间轴排期</h2>
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Schedule</span>
                 </div>
               </div>
-              <DailyTimeline 
-                date={date}
-                scheduledTasks={scheduledTasks}
-                onRemoveScheduledTask={handleRemoveScheduledTask}
-                projects={projects}
-                onUpdateTaskDuration={async (id, newEndTime) => {
-                  const res = await fetch("/api/schedule/daily", {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id, endTime: newEndTime }),
-                  })
-                  if (res.ok) {
-                    const data = await res.json()
-                    setScheduledTasks(prev => prev.map(t => t.id === id ? data.scheduledTask : t))
-                  }
-                }}
-              />
+              <div className="flex-grow overflow-hidden relative -mx-6 -mb-6">
+                <div className="absolute inset-0 px-6 pb-6">
+                  <DailyTimeline 
+                    date={date}
+                    scheduledTasks={scheduledTasks}
+                    onRemoveScheduledTask={handleRemoveScheduledTask}
+                    projects={projects}
+                    onUpdateTaskDuration={async (id, newEndTime) => {
+                      const res = await fetch("/api/schedule/daily", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id, endTime: newEndTime }),
+                      })
+                      if (res.ok) {
+                        const data = await res.json()
+                        setScheduledTasks(prev => prev.map(t => t.id === id ? data.scheduledTask : t))
+                      }
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

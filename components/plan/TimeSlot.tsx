@@ -6,14 +6,15 @@ interface TimeSlotProps {
   hour: number
   hourHeight: number
   timeSlotId: string
+  isLast?: boolean
 }
 
-export function TimeSlot({ hour, hourHeight, timeSlotId }: TimeSlotProps) {
+export function TimeSlot({ hour, hourHeight, timeSlotId, isLast }: TimeSlotProps) {
   const { setNodeRef, isOver } = useDroppable({ id: timeSlotId })
   return (
     <div
       ref={setNodeRef}
-      className={`relative border-b border-slate-100 flex items-start transition-colors ${isOver ? 'bg-sky-50' : ''}`}
+      className={`relative flex items-start transition-colors ${isOver ? 'bg-sky-50' : ''} ${!isLast ? 'border-b border-slate-100' : ''}`}
       style={{ height: `${hourHeight}px` }}
     >
       <div className="w-16 flex-shrink-0 text-right pr-4 pt-2">

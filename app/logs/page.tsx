@@ -229,10 +229,11 @@ export default function LogsPage() {
                     <TodoItem
                       key={t.milestoneId}
                       todo={t}
-                      onComplete={() => {
-                        fetch(`/api/milestones/${t.milestoneId}/complete`, { method: "POST" }).then(
-                          (r) => r.ok && fetchLogData()
-                        )
+                      onComplete={async () => {
+                        const res = await fetch(`/api/milestones/${t.milestoneId}/complete`, { method: "POST" });
+                        if (res.ok) {
+                          fetchLogData();
+                        }
                       }}
                     />
                   ))}

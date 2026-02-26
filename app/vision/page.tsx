@@ -82,7 +82,7 @@ export default function VisionBoardPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <header className="mb-12">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">精神空间</h1>
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">成长OS</h1>
         <p className="text-slate-500 mt-1">捕捉灵感，描绘未来，记录成长</p>
       </header>
 

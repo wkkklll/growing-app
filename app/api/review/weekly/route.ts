@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { getLLMProvider } from "@/lib/llm"
 import { parseJsonStringArray } from "@/lib/utils"
 
+export const dynamic = 'force-dynamic'
+
 // API for creating and getting weekly review records
 export async function POST(req: NextRequest) {
   try {

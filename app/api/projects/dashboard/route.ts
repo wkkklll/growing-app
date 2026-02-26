@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db"
 import { selectMilestonesByTimeBudget } from "@/lib/daily-todos"
 import { parseJsonStringArray } from "@/lib/utils"
 
+export const dynamic = 'force-dynamic'
+
 const parseWbsTree = (value: string | null) => {
   if (!value) return null
   try {

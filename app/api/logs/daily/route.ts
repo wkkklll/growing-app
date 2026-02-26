@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getLLMProvider } from "@/lib/llm"
 
+export const dynamic = 'force-dynamic'
+
 const PARSE_PROMPT = `用户提交了当日任务完成情况。请解析并输出严格 JSON：
 {
   "taskCompletions": { "milestoneId1": "completed", "milestoneId2": "partial", "milestoneId3": "pending" },

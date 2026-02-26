@@ -31,7 +31,7 @@ export default function RootLayout({
                 复盘
               </a>
               <a href="/vision" className="text-sm text-slate-600 hover:text-slate-900">
-                精神空间
+                成长OS
               </a>
               <a href="/analysis" className="text-sm text-slate-600 hover:text-slate-900">
                 AI 分析

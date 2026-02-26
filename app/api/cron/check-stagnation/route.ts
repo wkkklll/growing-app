@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 
+export const dynamic = 'force-dynamic'
+
 // This API route is intended to be called by a cron job (e.g., Vercel Cron, GitHub Actions)
 // It checks project stagnation and applies anti-abandonment strategies.
 export async function GET(req: NextRequest) {

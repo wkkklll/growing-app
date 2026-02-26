@@ -6,12 +6,9 @@ export async function GET(req: NextRequest) {
   try {
     const settings = await prisma.setting.findUnique({
       where: { key: "visionBoard" },
-      select: {
-        motivationPhrases: true,
-      },
     })
 
-    const phrases = parseJsonStringArray(settings?.motivationPhrases) || [
+    const phrases = parseJsonStringArray(settings?.motivationPhrases || null) || [
       "每天都是新的开始！",
       "相信自己，你可以做到！",
       "坚持不懈，终将成功！",

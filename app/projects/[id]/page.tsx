@@ -55,7 +55,7 @@ export default function ProjectDetailPage() {
     capabilityMetrics: [] as string[],
   })
 
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     if (!projectId) return
     const res = await fetch(`/api/projects/${projectId}`)
     const d = await res.json()
@@ -86,11 +86,11 @@ export default function ProjectDetailPage() {
       })
     }
     setLoading(false)
-  }
+  }, [projectId, setProject, setEditInfo, setEditMetrics, setLoading])
 
   useEffect(() => {
     fetchProject()
-  }, [projectId])
+  }, [projectId, fetchProject])
 
   const saveProjectInfo = async () => {
     if (!projectId) return

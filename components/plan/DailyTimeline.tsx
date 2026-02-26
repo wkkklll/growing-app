@@ -1,6 +1,7 @@
 "use client"
 
-import { useDraggable, useDroppable } from "@dnd-kit/core"
+import { useDraggable } from "@dnd-kit/core"
+import { TimeSlot } from "@/components/plan/TimeSlot"
 import { getProjectColor } from "@/lib/project-color"
 import { ScheduledTask } from "@/app/plan/page"
 import { useState, useRef, useEffect } from "react"
@@ -20,9 +21,9 @@ interface DailyTimelineProps {
 
 const HOUR_HEIGHT = 60 // Reduced height for smaller spacing
 
-function ScheduledDraggableItem({ task, style, onRemove, onResizeStart }: { 
-  task: ScheduledTask, 
-  style: any, 
+function ScheduledDraggableItem({ task, style, onRemove, onResizeStart }: {
+  task: ScheduledTask,
+  style: any,
   onRemove: (task: ScheduledTask) => void,
   onResizeStart: (e: React.MouseEvent, task: ScheduledTask) => void
 }) {
@@ -181,21 +182,15 @@ export function DailyTimeline({
             {hours.map((hour) => {
               const timeSlotId = `time-slot-${String(hour).padStart(2, "0")}:00`
               const { setNodeRef, isOver } = useDroppable({ id: timeSlotId })
-              
+
               return (
-                <div 
-                  key={hour} 
-                  ref={setNodeRef}
-                  className={`relative border-b border-slate-100 flex items-start transition-colors ${isOver ? 'bg-sky-50' : ''}`}
-                  style={{ height: `${HOUR_HEIGHT}px` }}
-                >
-                  <div className="w-16 flex-shrink-0 text-right pr-4 pt-2">
-                    <span className="text-[10px] font-bold text-slate-300 uppercase">
-                      {hour === 24 ? "00:00" : `${String(hour).padStart(2, "0")}:00`}
-                    </span>
-                  </div>
-                  <div className="flex-grow h-full border-l border-slate-100"></div>
-                </div>
+                <TimeSlot
+                  key={hour}
+                  hour={hour}
+                  hourHeight={HOUR_HEIGHT}
+                  isOver={isOver}
+                  setNodeRef={setNodeRef}
+                />
               )
             })}
 

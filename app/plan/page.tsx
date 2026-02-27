@@ -55,6 +55,7 @@ export default function PlanPage() {
   const [customTodos, setCustomTodos] = useState<CustomTodo[]>([])
   const [scheduledTasks, setScheduledTasks] = useState<ScheduledTask[]>([])
   const [totalDailyMinutes, setTotalDailyMinutes] = useState<number | null>(null)
+  const [scheduledTotalMinutes, setScheduledTotalMinutes] = useState<number>(0)
   const [projectsWithTime, setProjectsWithTime] = useState<
     { id: string; title: string; dailyMinutes: number | null }[]
   >([])
@@ -92,6 +93,15 @@ export default function PlanPage() {
   useEffect(() => {
     fetchDailyPlanData()
   }, [fetchDailyPlanData])
+
+  // Calculate total scheduled minutes whenever scheduledTasks changes
+  useEffect(() => {
+    const total = scheduledTasks.reduce((sum, task) => {
+      const duration = new Date(task.endTime).getTime() - new Date(task.startTime).getTime()
+      return sum + Math.round(duration / (1000 * 60))
+    }, 0)
+    setScheduledTotalMinutes(total)
+  }, [scheduledTasks])
 
   const toggleComplete = async (todo: Todo) => {
     const currentProjectMilestones = todos
@@ -383,9 +393,17 @@ export default function PlanPage() {
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex-grow h-[800px] flex flex-col overflow-hidden">
               <div className="flex items-center justify-between mb-6 shrink-0">
                 <h2 className="text-xl font-bold text-slate-800">时间轴排期</h2>
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Schedule</span>
+                <div className="flex items-center gap-4">
+                  {scheduledTotalMinutes > 0 && (
+                    <div className="flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1 border border-sky-100">
+                      <span className="text-sm font-bold text-sky-600">{Math.round(scheduledTotalMinutes / 60 * 10) / 10}h</span>
+                      <span className="text-[10px] text-sky-400">已安排</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Schedule</span>
+                  </div>
                 </div>
               </div>
               <div className="flex-grow overflow-hidden relative -mx-6 -mb-6">

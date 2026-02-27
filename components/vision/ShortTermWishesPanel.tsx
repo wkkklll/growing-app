@@ -126,10 +126,25 @@ export function ShortTermWishesPanel({ currentTotalPoints, onPointsUpdate }: Sho
   const pendingWishes = wishes.filter(w => w.status === "pending")
   const claimedWishes = wishes.filter(w => w.status === "claimed")
 
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-slate-800">近日小心愿</h2>
+        <button 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="flex items-center gap-2 text-xl font-bold text-slate-800 hover:text-sky-600 transition-colors"
+        >
+          近日小心愿
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className={`h-5 w-5 transition-transform duration-300 ${isCollapsed ? '-rotate-90' : ''}`} 
+            viewBox="0 0 20 20" 
+            fill="currentColor"
+          >
+            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </button>
         <div className="flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 border border-amber-100">
           <span className="text-amber-500">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -140,6 +155,8 @@ export function ShortTermWishesPanel({ currentTotalPoints, onPointsUpdate }: Sho
         </div>
       </div>
 
+      {!isCollapsed && (
+        <>
       <div className="mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
         <input
           type="text"
@@ -227,6 +244,8 @@ export function ShortTermWishesPanel({ currentTotalPoints, onPointsUpdate }: Sho
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { getProjectColor } from "@/lib/project-color"
 import { DailyMetricPanel } from "@/components/review/DailyMetricPanel"
 import { EmotionCavePanel } from "@/components/review/EmotionCavePanel"
@@ -48,9 +49,15 @@ function TodoItem({
 }
 
 export default function LogsPage() {
+  const searchParams = useSearchParams()
+  const urlDate = searchParams.get("date")
+  
   const [date, setDate] = useState(() => {
+    // Priority 1: URL parameter
+    if (urlDate) return urlDate
+    
+    // Priority 2: Default logic (before 2 AM show yesterday)
     const now = new Date()
-    // If it's before 2 AM, show yesterday's date by default
     if (now.getHours() < 2) {
       const yesterday = new Date(now)
       yesterday.setDate(now.getDate() - 1)
@@ -114,6 +121,29 @@ export default function LogsPage() {
     fetchLogData()
   }, [fetchLogData])
 
+  // Auto-save functionality with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const completionText = buildCompletionText()
+      if (completionText.trim() || logId) {
+        fetch("/api/logs/daily", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date,
+            moodIndex,
+            completionText,
+            milestoneIds: todos.map((t) => t.milestoneId),
+          }),
+        }).then(res => res.json()).then(data => {
+          if (data.logId) setLogId(data.logId)
+        }).catch(console.error)
+      }
+    }, 3000) // Auto-save after 3 seconds of inactivity
+    
+    return () => clearTimeout(timer)
+  }, [summaryText, highlightText, blockerText, improveText, tomorrowText, moodIndex, date, todos, logId])
+
   const buildCompletionText = () => {
     const parts = [
       summaryText.trim() ? `总体情况：${summaryText.trim()}` : "",
@@ -128,8 +158,9 @@ export default function LogsPage() {
   const submitLog = async () => {
     setLoading(true)
     try {
+      // Step 1: Save the log first
       const completionText = buildCompletionText()
-      const res = await fetch("/api/logs/daily", {
+      const saveRes = await fetch("/api/logs/daily", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -139,9 +170,25 @@ export default function LogsPage() {
           milestoneIds: todos.map((t) => t.milestoneId),
         }),
       })
-      const data = await res.json()
-      setLogId(data.logId)
+      const saveData = await saveRes.json()
+      setLogId(saveData.logId)
+      
+      // Step 2: Generate AI review and save it
+      const reviewRes = await fetch("/api/review/daily", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date,
+          completionText,
+        }),
+      })
+      const reviewData = await reviewRes.json()
+      setAiReview(reviewData.aiReview ?? "")
+      
       setSubmitted(true)
+      
+      // Keep page at top, prevent auto-scroll to bottom
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setLoading(false)
     }

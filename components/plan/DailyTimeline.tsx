@@ -183,8 +183,8 @@ export function DailyTimeline({
     <div className="flex flex-col h-full">
       
       <div className="relative overflow-hidden flex-grow bg-white">
-        <div ref={timelineRef} className="h-full overflow-y-auto relative scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent" style={{ maxHeight: `${18 * HOUR_HEIGHT + 60}px` }}>
-          <div className="relative" style={{ height: `${18 * HOUR_HEIGHT + 60}px` }}>
+        <div ref={timelineRef} className="h-full overflow-y-auto relative scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+          <div className="relative pb-16">
             {hours.map((hour, index) => {
               const timeSlotId = `time-slot-${String(hour).padStart(2, "0")}:00`
               const isLast = index === hours.length - 1

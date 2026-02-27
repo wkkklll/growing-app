@@ -4,6 +4,14 @@ import { getLLMProvider } from "@/lib/llm"
 
 export const dynamic = 'force-dynamic'
 
+// Helper to parse date string (YYYY-MM-DD) to local midnight Date
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  // Create date in local timezone (month is 0-indexed in JS)
+  const date = new Date(year, month - 1, day, 0, 0, 0, 0)
+  return date
+}
+
 const PARSE_PROMPT = `用户提交了当日任务完成情况。请解析并输出严格 JSON：
 {
   "taskCompletions": { "milestoneId1": "completed", "milestoneId2": "partial", "milestoneId3": "pending" },
@@ -18,8 +26,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const dateStr = searchParams.get("date") ?? new Date().toISOString().slice(0, 10)
-    const date = new Date(dateStr)
-    date.setHours(0, 0, 0, 0)
+    const date = parseLocalDate(dateStr)
 
     const log = await prisma.dailyLog.findUnique({
       where: { logDate: date },
@@ -75,8 +82,7 @@ export async function POST(req: NextRequest) {
       milestoneIds?: string[]
     }
     const dateStr = body.date ?? new Date().toISOString().slice(0, 10)
-    const date = new Date(dateStr)
-    date.setHours(0, 0, 0, 0)
+    const date = parseLocalDate(dateStr)
 
     let taskCompletions: Record<string, string> = {}
     let moodIndex = body.moodIndex ?? 5

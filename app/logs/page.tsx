@@ -118,6 +118,17 @@ export default function LogsPage() {
     fetchLogData()
   }, [fetchLogData])
 
+  const buildCompletionText = useCallback(() => {
+    const parts = [
+      summaryText.trim() ? `总体情况：${summaryText.trim()}` : "",
+      highlightText.trim() ? `完成亮点：${highlightText.trim()}` : "",
+      blockerText.trim() ? `未完成原因：${blockerText.trim()}` : "",
+      improveText.trim() ? `改进点：${improveText.trim()}` : "",
+      tomorrowText.trim() ? `明日重点：${tomorrowText.trim()}` : "",
+    ].filter(Boolean)
+    return parts.join("\n")
+  }, [summaryText, highlightText, blockerText, improveText, tomorrowText])
+
   // Auto-save functionality with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -142,18 +153,7 @@ export default function LogsPage() {
     }, 3000) // Auto-save after 3 seconds of inactivity
     
     return () => clearTimeout(timer)
-  }, [summaryText, highlightText, blockerText, improveText, tomorrowText, moodIndex, date, todos, scheduledTasks, logId])
-
-  const buildCompletionText = () => {
-    const parts = [
-      summaryText.trim() ? `总体情况：${summaryText.trim()}` : "",
-      highlightText.trim() ? `完成亮点：${highlightText.trim()}` : "",
-      blockerText.trim() ? `未完成原因：${blockerText.trim()}` : "",
-      improveText.trim() ? `改进点：${improveText.trim()}` : "",
-      tomorrowText.trim() ? `明日重点：${tomorrowText.trim()}` : "",
-    ].filter(Boolean)
-    return parts.join("\n")
-  }
+  }, [buildCompletionText, moodIndex, date, todos, scheduledTasks, logId])
 
   const submitLog = async () => {
     setLoading(true)
@@ -304,7 +304,7 @@ export default function LogsPage() {
                         logEntries.filter((e) => e.status === "completed").map((e) => e.milestoneId)
                       )
                       const scheduledIds = new Set(
-                        scheduledTasks.map((s) => (s.taskType === "milestone" ? s.taskId : s.taskId))
+                        scheduledTasks.map((s) => s.taskId)
                       )
                       const pendingFromEntries = logEntries.filter((e) => e.status !== "completed")
                       const pendingFromTodos = todos

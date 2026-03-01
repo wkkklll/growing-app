@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { getProjectColor } from "@/lib/project-color"
 import { DailyMetricPanel } from "@/components/review/DailyMetricPanel"
 import { EmotionCavePanel } from "@/components/review/EmotionCavePanel"
 import ReactMarkdown from "react-markdown"
@@ -16,6 +15,13 @@ interface Todo {
   title: string
 }
 
+interface CustomTodo {
+  id: string
+  title: string
+  projectId: string | null
+  projectTitle: string | null
+}
+
 interface LogEntry {
   milestoneId: string
   projectId: string
@@ -24,28 +30,13 @@ interface LogEntry {
   status: string
 }
 
-function TodoItem({
-  todo,
-  onComplete,
-}: {
-  todo: Todo
-  onComplete: () => void
-}) {
-  return (
-    <li
-      className="flex cursor-pointer items-center gap-3 border-l-4 px-4 py-3 hover:bg-slate-50 transition-colors"
-      style={{ borderLeftColor: getProjectColor(todo.projectId) }}
-    >
-      <input
-        type="checkbox"
-        className="h-5 w-5 cursor-pointer rounded-full border-slate-300 text-sky-600 focus:ring-sky-500"
-        onChange={onComplete}
-      />
-      <span className="text-slate-700 font-medium">
-        {todo.title} <span className="text-slate-400 text-xs font-normal ml-1">({todo.projectTitle})</span>
-      </span>
-    </li>
-  )
+interface ScheduledTask {
+  id: string
+  taskId: string
+  taskType: "milestone" | "standalone"
+  taskTitle: string
+  startTime: string
+  endTime: string
 }
 
 export default function LogsPage() {
@@ -67,6 +58,8 @@ export default function LogsPage() {
   })
   
   const [todos, setTodos] = useState<Todo[]>([])
+  const [customTodos, setCustomTodos] = useState<CustomTodo[]>([])
+  const [scheduledTasks, setScheduledTasks] = useState<ScheduledTask[]>([])
   const [logEntries, setLogEntries] = useState<LogEntry[]>([])
   const [summaryText, setSummaryText] = useState("")
   const [highlightText, setHighlightText] = useState("")
@@ -80,14 +73,18 @@ export default function LogsPage() {
   const [logId, setLogId] = useState<string | null>(null)
 
   const fetchLogData = useCallback(async () => {
-    const [todoRes, logRes] = await Promise.all([
+    const [todoRes, logRes, scheduleRes] = await Promise.all([
       fetch(`/api/todos/daily?date=${date}`),
       fetch(`/api/logs/daily?date=${date}`),
+      fetch(`/api/schedule/daily?planDate=${date}`),
     ])
     const todoData = await todoRes.json()
     const logData = await logRes.json()
+    const scheduleData = await scheduleRes.json()
 
     setTodos(todoData.todos ?? [])
+    setCustomTodos(todoData.customTodos ?? [])
+    setScheduledTasks(scheduleData.scheduledTasks ?? [])
     setLogEntries(logData.entries ?? [])
     setMoodIndex(typeof logData.moodIndex === "number" ? logData.moodIndex : 5)
     setAiReview(logData.aiReview ?? "")
@@ -133,7 +130,10 @@ export default function LogsPage() {
             date,
             moodIndex,
             completionText,
-            milestoneIds: todos.map((t) => t.milestoneId),
+            milestoneIds: [
+              ...todos.map((t) => t.milestoneId),
+              ...scheduledTasks.filter((s) => s.taskType === "milestone").map((s) => s.taskId),
+            ].filter((id, i, arr) => arr.indexOf(id) === i),
           }),
         }).then(res => res.json()).then(data => {
           if (data.logId) setLogId(data.logId)
@@ -142,7 +142,7 @@ export default function LogsPage() {
     }, 3000) // Auto-save after 3 seconds of inactivity
     
     return () => clearTimeout(timer)
-  }, [summaryText, highlightText, blockerText, improveText, tomorrowText, moodIndex, date, todos, logId])
+  }, [summaryText, highlightText, blockerText, improveText, tomorrowText, moodIndex, date, todos, scheduledTasks, logId])
 
   const buildCompletionText = () => {
     const parts = [
@@ -167,7 +167,10 @@ export default function LogsPage() {
           date,
           moodIndex,
           completionText,
-          milestoneIds: todos.map((t) => t.milestoneId),
+          milestoneIds: [
+            ...todos.map((t) => t.milestoneId),
+            ...scheduledTasks.filter((s) => s.taskType === "milestone").map((s) => s.taskId),
+          ],
         }),
       })
       const saveData = await saveRes.json()
@@ -266,82 +269,97 @@ export default function LogsPage() {
               <DailyMetricPanel date={date} />
             </div>
             
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm shrink-0">
-              <h3 className="mb-4 text-sm font-bold text-slate-400 uppercase tracking-widest">今日任务</h3>
-              {todos.length === 0 ? (
-                <p className="text-sm text-slate-500 italic py-4 text-center">今日暂无待办任务</p>
-              ) : (
-                <ul className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden shadow-sm">
-                  {todos.map((t) => (
-                    <TodoItem
-                      key={t.milestoneId}
-                      todo={t}
-                      onComplete={async () => {
-                        const res = await fetch(`/api/milestones/${t.milestoneId}/complete`, { method: "POST" });
-                        if (res.ok) {
-                          fetchLogData();
-                        }
-                      }}
-                    />
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 flex-grow">
-              <div className="rounded-2xl border border-slate-200 bg-emerald-50/30 p-6 shadow-sm flex flex-col h-full">
-                <h3 className="mb-4 text-sm font-bold text-emerald-600 uppercase tracking-widest shrink-0">已完成</h3>
-                <div className="flex-grow overflow-y-auto">
-                  {logEntries.filter((e) => e.status === "completed").length === 0 ? (
-                    <p className="text-sm text-slate-400 italic py-2">暂无已完成任务</p>
-                  ) : (
-                    <ul className="space-y-3">
-                      {logEntries
-                        .filter((e) => e.status === "completed")
-                        .map((e) => (
-                          <li key={e.milestoneId} className="flex items-start gap-3 bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
-                            <div className="mt-1 h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                            <span className="text-sm text-slate-700 leading-tight">
-                              {e.title} <span className="text-[10px] text-slate-400 block mt-0.5 font-bold uppercase">{e.projectTitle}</span>
-                            </span>
-                          </li>
-                        ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 bg-amber-50/30 p-6 shadow-sm flex flex-col h-full">
-                <h3 className="mb-4 text-sm font-bold text-amber-600 uppercase tracking-widest shrink-0">待跟进</h3>
-                <div className="flex-grow overflow-y-auto">
-                  {(() => {
-                    const entryMap = new Map(logEntries.map((e) => [e.milestoneId, e]))
-                    const pendingFromEntries = logEntries.filter((e) => e.status !== "completed")
-                    const pendingFromTodos = todos
-                      .filter((t) => !entryMap.has(t.milestoneId))
-                      .map((t) => ({
-                        milestoneId: t.milestoneId,
-                        title: t.title,
-                        projectTitle: t.projectTitle,
-                        status: "pending",
-                      }))
-                    const pendingAll = [...pendingFromEntries, ...pendingFromTodos]
-                    if (pendingAll.length === 0) {
-                      return <p className="text-sm text-slate-400 italic py-2">今日任务已全部达成！</p>
-                    }
-                    return (
-                      <ul className="space-y-3">
-                        {pendingAll.map((e) => (
-                          <li key={e.milestoneId} className="flex items-start gap-3 bg-white p-3 rounded-xl border border-amber-100 shadow-sm">
-                            <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${e.status === 'partial' ? 'bg-sky-400' : 'bg-amber-400'}`} />
-                            <span className="text-sm text-slate-700 leading-tight">
-                              {e.title} <span className="text-[10px] text-slate-400 block mt-0.5 font-bold uppercase">{e.projectTitle}</span>
-                            </span>
-                          </li>
-                        ))}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col flex-grow min-h-0">
+              <h3 className="mb-6 text-lg font-bold text-slate-800 shrink-0">今日任务</h3>
+              
+              {/* Sub-modules: 已完成 + 待跟进 */}
+              <div className="grid gap-4 sm:grid-cols-2 flex-grow min-h-0">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/30 p-4 flex flex-col min-h-0">
+                  <h4 className="mb-3 text-sm font-bold text-emerald-600 uppercase tracking-widest shrink-0">已完成</h4>
+                  <div className="flex-grow overflow-y-auto min-h-0">
+                    {logEntries.filter((e) => e.status === "completed").length === 0 ? (
+                      <p className="text-sm text-slate-400 italic py-2">暂无已完成任务</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {logEntries
+                          .filter((e) => e.status === "completed")
+                          .map((e) => (
+                            <li key={e.milestoneId} className="flex items-start gap-3 bg-white p-3 rounded-lg border border-emerald-100">
+                              <div className="mt-1 h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="text-sm text-slate-700 leading-tight">
+                                {e.title} <span className="text-[10px] text-slate-400 block mt-0.5 font-bold uppercase">{e.projectTitle}</span>
+                              </span>
+                            </li>
+                          ))}
                       </ul>
-                    )
-                  })()}
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-amber-200 bg-amber-50/30 p-4 flex flex-col min-h-0">
+                  <h4 className="mb-3 text-sm font-bold text-amber-600 uppercase tracking-widest shrink-0">待跟进</h4>
+                  <div className="flex-grow overflow-y-auto min-h-0">
+                    {(() => {
+                      const completedIds = new Set(
+                        logEntries.filter((e) => e.status === "completed").map((e) => e.milestoneId)
+                      )
+                      const scheduledIds = new Set(
+                        scheduledTasks.map((s) => (s.taskType === "milestone" ? s.taskId : s.taskId))
+                      )
+                      const pendingFromEntries = logEntries.filter((e) => e.status !== "completed")
+                      const pendingFromTodos = todos
+                        .filter((t) => !completedIds.has(t.milestoneId) && !scheduledIds.has(t.milestoneId))
+                        .map((t) => ({ id: t.milestoneId, title: t.title, projectTitle: t.projectTitle, status: "pending" as const, complete: async () => { const r = await fetch(`/api/milestones/${t.milestoneId}/complete`, { method: "POST" }); if (r.ok) fetchLogData() } }))
+                      const pendingFromCustom = customTodos
+                        .filter((ct) => !scheduledIds.has(ct.id))
+                        .map((t) => ({ id: t.id, title: t.title, projectTitle: t.projectTitle || "独立任务", status: "pending" as const, complete: async () => { const r = await fetch(`/api/standalone/${t.id}/complete`, { method: "POST" }); if (r.ok) fetchLogData() } }))
+                      const pendingFromScheduled = scheduledTasks
+                        .filter((s) => !completedIds.has(s.taskId))
+                        .map((s) => ({
+                          id: s.taskId,
+                          title: s.taskTitle,
+                          projectTitle: s.taskType === "standalone" ? "独立任务" : "项目任务",
+                          status: "pending" as const,
+                          complete: async () => {
+                            const r = s.taskType === "milestone"
+                              ? await fetch(`/api/milestones/${s.taskId}/complete`, { method: "POST" })
+                              : await fetch(`/api/standalone/${s.taskId}/complete`, { method: "POST" })
+                            if (r.ok) fetchLogData()
+                          },
+                        }))
+                      const pendingEntries = pendingFromEntries.map((e) => ({
+                        id: e.milestoneId,
+                        title: e.title,
+                        projectTitle: e.projectTitle,
+                        status: e.status as "pending" | "partial",
+                        complete: undefined as (() => Promise<void>) | undefined,
+                      }))
+                      const pendingAll = [...pendingEntries, ...pendingFromTodos, ...pendingFromCustom, ...pendingFromScheduled]
+                      if (pendingAll.length === 0) {
+                        return <p className="text-sm text-slate-400 italic py-2">今日任务已全部达成！</p>
+                      }
+                      return (
+                        <ul className="space-y-2">
+                          {pendingAll.map((e) => (
+                            <li key={e.id} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-amber-100">
+                              {e.complete ? (
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4 cursor-pointer rounded-full border-slate-300 text-sky-600 focus:ring-sky-500 shrink-0"
+                                  onChange={e.complete}
+                                />
+                              ) : (
+                                <div className={`h-2 w-2 rounded-full shrink-0 ${e.status === "partial" ? "bg-sky-400" : "bg-amber-400"}`} />
+                              )}
+                              <span className="text-sm text-slate-700 leading-tight">
+                                {e.title} <span className="text-[10px] text-slate-400 block mt-0.5 font-bold uppercase">{e.projectTitle}</span>
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )
+                    })()}
+                  </div>
                 </div>
               </div>
             </div>

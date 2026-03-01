@@ -20,6 +20,7 @@ export function ShortTermWishesPanel({ currentTotalPoints, onPointsUpdate }: Sho
   const [newWishCost, setNewWishCost] = useState<number>(10)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const fetchWishes = useCallback(async () => {
     setLoading(true)
@@ -125,8 +126,6 @@ export function ShortTermWishesPanel({ currentTotalPoints, onPointsUpdate }: Sho
 
   const pendingWishes = wishes.filter(w => w.status === "pending")
   const claimedWishes = wishes.filter(w => w.status === "claimed")
-
-  const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
     <div>

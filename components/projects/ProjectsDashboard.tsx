@@ -107,14 +107,14 @@ export function ProjectsDashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">项目仪表盘</h1>
+    <div className="mx-auto max-w-7xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">项目仪表盘</h1>
         <button
           onClick={() => setShowNewProjectForm(true)}
-          className="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-sky-700 shadow-lg shadow-sky-200 transition-all active:scale-95"
+          className="rounded-xl bg-sky-600 px-6 py-3 sm:py-2.5 text-sm sm:text-base font-bold text-white hover:bg-sky-700 shadow-lg shadow-sky-200 transition-all active:scale-95 min-h-[44px]"
         >
-          新建项目
+          + 新建项目
         </button>
       </div>
 
@@ -154,22 +154,22 @@ export function ProjectsDashboard() {
                 </button>
               </div>
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 flex-grow max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+              <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 flex-grow max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                 {projects.map((p) => (
                   <div
                     key={p.id}
-                    className={`group relative cursor-pointer rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full ${expandedProjectId === p.id ? 'sm:col-span-2' : ''}`}
+                    className={`group relative cursor-pointer rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full ${expandedProjectId === p.id ? 'sm:col-span-2' : ''}`}
                     onClick={() => toggleProject(p.id)}
                   >
-                    <div className="flex items-start justify-between mb-4 shrink-0">
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-start justify-between mb-3 sm:mb-4 shrink-0">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                         <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: getProjectColor(p.id) }} />
-                        <h3 className="font-bold text-slate-800 group-hover:text-sky-600 transition-colors truncate">{p.title}</h3>
+                        <h3 className="font-bold text-sm sm:text-base text-slate-800 group-hover:text-sky-600 transition-colors truncate">{p.title}</h3>
                       </div>
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <div className="flex items-center gap-1 sm:gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
                         <a
                           href={`/projects/${p.id}`}
-                          className="p-1.5 rounded-lg bg-slate-50 text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-all"
+                          className="flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-lg bg-slate-50 text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-all"
                           onClick={(e) => e.stopPropagation()}
                           title="详情"
                         >
@@ -179,7 +179,7 @@ export function ProjectsDashboard() {
                         </a>
                         <button
                           type="button"
-                          className="p-1.5 rounded-lg bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                          className="flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-lg bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
                           onClick={(e) => {
                             e.stopPropagation()
                             deleteProject(p.id, p.title)
@@ -298,18 +298,18 @@ export function ProjectsDashboard() {
                   {todos.map((t) => (
                     <li
                       key={t.milestoneId}
-                      className="group flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors"
+                      className="group flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 hover:bg-slate-50 transition-colors"
                     >
                       <input
                         type="checkbox"
-                        className="h-5 w-5 cursor-pointer rounded-full border-slate-300 text-sky-600 focus:ring-sky-500 transition-all shrink-0"
+                        className="h-6 w-6 sm:h-5 sm:w-5 cursor-pointer rounded-full border-slate-300 text-sky-600 focus:ring-sky-500 transition-all shrink-0"
                         onChange={() => toggleComplete(t.milestoneId)}
                       />
                       <div className="flex-grow min-w-0">
-                        <p className="text-sm font-bold text-slate-700 truncate">{t.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-sm sm:text-base font-bold text-slate-700 truncate">{t.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
                           <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: getProjectColor(t.projectId) }} />
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate">{t.projectTitle}</span>
+                          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-tighter truncate">{t.projectTitle}</span>
                         </div>
                       </div>
                     </li>

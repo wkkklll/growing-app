@@ -33,15 +33,15 @@ export function HomePage() {
   }, [fetchTotalPoints])
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <header className="mb-12">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">欢迎回来！</h1>
-        <p className="text-slate-500 mt-1">今天也是充满活力的一天，继续向目标迈进吧。</p>
+    <div className="mx-auto max-w-7xl">
+      <header className="mb-8 sm:mb-12">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">欢迎回来！</h1>
+        <p className="text-sm sm:text-base text-slate-500 mt-1">今天也是充满活力的一天，继续向目标迈进吧。</p>
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-12 items-stretch mb-8" key={refreshKey}>
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-12 items-stretch mb-6 sm:mb-8" key={refreshKey}>
         <section className="lg:col-span-8 h-full">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm h-full">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-8 shadow-sm h-full">
             <DailyHeatmap />
           </div>
         </section>
@@ -52,9 +52,9 @@ export function HomePage() {
         </section>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-12 items-start mb-8">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-12 items-start mb-6 sm:mb-8">
         <section className="lg:col-span-12">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-8 shadow-sm">
             <WeightChart />
           </div>
         </section>

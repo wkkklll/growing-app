@@ -239,23 +239,23 @@ export default function LogsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 space-y-12">
+    <div className="mx-auto max-w-7xl">
       {/* Top Section: Header & Review Form */}
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">每日复盘</h1>
-          <div className="flex items-center gap-4">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">每日复盘</h1>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-4 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="rounded-xl border-none bg-transparent px-4 py-1.5 text-sm font-bold text-slate-700 focus:ring-0 focus:outline-none"
+                className="rounded-xl border-none bg-transparent px-3 sm:px-4 py-2 sm:py-1.5 text-sm font-bold text-slate-700 focus:ring-0 focus:outline-none w-full"
               />
             </div>
             <Link
               href="/review/weekly"
-              className="rounded-xl bg-sky-50 px-4 py-2.5 text-sm font-bold text-sky-600 hover:bg-sky-100 transition-all"
+              className="rounded-xl bg-sky-50 px-4 py-3 sm:py-2.5 text-sm font-bold text-sky-600 hover:bg-sky-100 transition-all text-center min-h-[44px] flex items-center justify-center"
             >
               每周复盘 →
             </Link>
@@ -407,19 +407,19 @@ export default function LogsPage() {
                 ))}
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-slate-100 shrink-0">
-                <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-6 border-t border-slate-100 shrink-0">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
                   <button
                     onClick={submitLog}
                     disabled={loading}
-                    className="rounded-xl bg-slate-900 px-10 py-3.5 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50 shadow-xl shadow-slate-200 transition-all active:scale-95"
+                    className="rounded-xl bg-slate-900 px-8 sm:px-10 py-3.5 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50 shadow-xl shadow-slate-200 transition-all active:scale-95 min-h-[48px]"
                   >
                     {loading ? "提交中..." : "保存复盘"}
                   </button>
                   <button
                     onClick={fetchReview}
                     disabled={loading}
-                    className="rounded-xl bg-sky-50 px-10 py-3.5 text-sm font-bold text-sky-600 hover:bg-sky-100 disabled:opacity-50 transition-all active:scale-95"
+                    className="rounded-xl bg-sky-50 px-8 sm:px-10 py-3.5 text-sm font-bold text-sky-600 hover:bg-sky-100 disabled:opacity-50 transition-all active:scale-95 min-h-[48px]"
                   >
                     AI 评价
                   </button>
@@ -427,6 +427,12 @@ export default function LogsPage() {
                 {logId && (
                   <button
                     onClick={handleExport}
+                    className="rounded-xl bg-emerald-50 px-6 py-3 text-sm font-bold text-emerald-600 hover:bg-emerald-100 transition-all active:scale-95 min-h-[44px] w-full sm:w-auto"
+                  >
+                    📥 导出
+                  </button>
+                )}
+              </div>
                     className="flex items-center gap-2 rounded-xl border border-slate-200 px-5 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
